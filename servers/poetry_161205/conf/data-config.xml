@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dataConfig>
+     <dataSource name="MyMongo" type="MongoDataSource" database="poetry"/>
+     <document name="Products">
+        <entity  name="poem" 
+                 processor="MongoEntityProcessor"
+                 query="{'$match':{'category.name':'先秦'}}|{'$unwind':'$poems'}|{'$project':{'category_url':'$category.url', 'category_name':'$category.name', 'category_numofauthors':'$category.numofauthors', 'author_url':'$author.url', 'author_name':'$author.name', 'author_numofpoems':'$author.numofpoems', 'author_brief':'$author.brief', 'poem_url':'$poems.url', 'poem_name':'$poems.name', 'poem_content':'$poems.content', 'poem_appreciation':'$poems.appreciation', 'poem_tags':'$poems.tags'}}"
+                 collection="poem"
+                 datasource="MyMongo"
+                 deltaQuery="{'UpdateDate':{$gt:{$date:'${dih.last_index_time}'}}}"
+                 deltaImportQuery="{'_id':'${dih.delta._id}'}"
+                 transformer="MongoMapperTransformer" >
+                 <!--
+             <field column="title"           name="title"       mongoField="Title"/>
+             <field column="description"     name="description" mongoField="Long Description"/>
+             <field column="brand"           name="brand"  />
+-->
+             <!-- column 是solr中的名字，mongoField是mongo中的名字, 没有mongoField的保持原样 -->
+             <field column="id"           name="id"             mongoField="_id"/>
+             <field column="category_url"     name="category_url"       mongoField="category_url"/>
+             <field column="category_name"     name="category_name"       mongoField="category_name"/>
+             <field column="category_numofauthors"     name="category_numofauthors"       mongoField="category_numofauthors"/>
+             <field column="author_url"       name="author_url"         mongoField="author_url"/>
+             <field column="author_name"       name="author_name"         mongoField="author_name"/>
+             <field column="author_numofpoems"       name="author_numofpoems"         mongoField="author_numofpoems"/>
+             <field column="author_brief"       name="author_brief"         mongoField="author_brief"/>
+             <field column="poem_url"        name="poem_url"  mongoField="poem_url"/>
+             <field column="poem_name"        name="poem_name"  mongoField="poem_name"/>
+             <field column="poem_content"        name="poem_content"  mongoField="poem_content"/>
+             <field column="poem_appreciation"        name="poem_appreciation"  mongoField="poem_appreciation"/>
+             <field column="poem_tags"        name="poem_tags"  mongoField="poem_tags"/>
+         </entity>
+     </document>
+ </dataConfig>
