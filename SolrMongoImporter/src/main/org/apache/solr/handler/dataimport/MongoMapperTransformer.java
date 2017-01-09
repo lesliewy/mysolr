@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 public class MongoMapperTransformer extends Transformer {
 	private static final Logger LOG = LoggerFactory.getLogger(MongoMapperTransformer.class);
 	
+	private static int id = 1;
+	
     @Override
     public Object transformRow(Map<String, Object> row, Context context) {
    	 LOG.info("this is transformRow() row: " + row);
@@ -25,7 +27,8 @@ public class MongoMapperTransformer extends Transformer {
             String columnFieldName = map.get(DataImporter.COLUMN);
             /*  unwind的结果中同一个数组的记录的_id都是一样的，需要做下处理. */
             if("_id".equalsIgnoreCase(mongoFieldName)){
-            	row.put(columnFieldName, String.valueOf(System.nanoTime()));
+//            	row.put(columnFieldName, String.valueOf(System.nanoTime()));
+            	row.put(columnFieldName, String.valueOf(id++));
             	continue;
             }
             row.put(columnFieldName, row.get(mongoFieldName));
