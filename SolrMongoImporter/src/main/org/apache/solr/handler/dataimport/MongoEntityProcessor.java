@@ -49,7 +49,7 @@ public class MongoEntityProcessor extends EntityProcessorBase {
 
     @Override
     public Map<String, Object> nextRow() {
-   	 LOG.info("leslie: this is nextRow()");
+//   	 LOG.info("leslie: this is nextRow()");
         if (rowIterator == null) {
             String query = this.getQuery();
             initQuery(context.replaceTokens(query));
@@ -60,7 +60,7 @@ public class MongoEntityProcessor extends EntityProcessorBase {
 
     @Override
     public Map<String, Object> nextModifiedRowKey() {
-   	 LOG.info("leslie: this is nextModifiedRowKey()");
+//   	 LOG.info("leslie: this is nextModifiedRowKey()");
         if (rowIterator == null) {
             String deltaQuery = context.getEntityAttribute(DELTA_QUERY);
             if (deltaQuery == null)
@@ -73,7 +73,7 @@ public class MongoEntityProcessor extends EntityProcessorBase {
 
     @Override
     public Map<String, Object> nextDeletedRowKey() {
-   	 LOG.info("leslie: this is nextDeletedRowKey()");
+//   	 LOG.info("leslie: this is nextDeletedRowKey()");
         if (rowIterator == null) {
             String deletedPkQuery = context.getEntityAttribute(DEL_PK_QUERY);
             if (deletedPkQuery == null)

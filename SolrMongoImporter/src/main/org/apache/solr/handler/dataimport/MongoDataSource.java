@@ -20,6 +20,7 @@ import com.mongodb.AggregationOptions;
 import com.mongodb.AggregationOptions.Builder;
 import com.mongodb.AggregationOptions.OutputMode;
 import com.mongodb.AggregationOutput;
+import com.mongodb.Cursor;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -45,7 +46,7 @@ public class MongoDataSource extends DataSource<Iterator<Map<String, Object>>> {
     private DB mongoDb;
     private Mongo mongoConnection;
 
-    private DBCursor mongoCursor;
+    private Cursor mongoCursor;
 
     @Override
     public void init(Context context, Properties initProps) {
@@ -60,7 +61,7 @@ public class MongoDataSource extends DataSource<Iterator<Map<String, Object>>> {
             throw new DataImportHandlerException(SEVERE
                     , "Database must be supplied");
         }
-        try {
+       try {
             Mongo mongo = new Mongo(host, Integer.parseInt(port));
             mongo.setReadPreference(ReadPreference.secondaryPreferred());
 
@@ -85,7 +86,6 @@ public class MongoDataSource extends DataSource<Iterator<Map<String, Object>>> {
    	  LOG.info("leslie: this is getData(query) query: " + query);
    	  Iterator<Map<String, Object>> iter = null;
    	  String[] pipeStr = query.split("\\|");
-   	  /** find **/
    	  if(pipeStr.length <= 1){
            DBObject queryObject = (DBObject) JSON.parse(query);
            LOG.debug("Executing MongoQuery: " + query.toString());
@@ -97,15 +97,27 @@ public class MongoDataSource extends DataSource<Iterator<Map<String, Object>>> {
 
            iter = new ResultSetIterator(mongoCursor).getIterator();
    	  }else{
-      	  /** aggregation pipeline 调用aggregate(List<DBObject>() 方法编译不通过**/
-   		  DBObject[] otherpipelines = new DBObject[pipeStr.length - 1];
+   		  /*
+   		  // aggregation pipeline 调用aggregate(List<DBObject>() 方法编译不通过
+   		  DBObject[] otherpipelines = new DBObject[pipeStr.length - 1]; 
    		  DBObject firstObject = (DBObject)JSON.parse(pipeStr[0]);
       	  for(int i = 1; i < pipeStr.length; i++){
       		  otherpipelines[i - 1] = (DBObject) JSON.parse(pipeStr[i]);
       	  }
       	  AggregationOutput out = this.mongoCollection.aggregate(firstObject, otherpipelines);
-      	  LOG.info("leslie out: " + out);
       	  iter = new AggreResultSetIterator(out).getIterator();
+      	  */
+   		  
+   		  // 使用cursor的 aggregate. 因为上面的方法会报错: aggregation result exceeds maximum document size (16MB)" , "code" : 16389
+   		  List<DBObject> pipelines = new ArrayList<DBObject>();
+      	  for(int i = 0; i < pipeStr.length; i++){
+      		  pipelines.add((DBObject) JSON.parse(pipeStr[i]));
+      	  }
+      	  AggregationOptions options = AggregationOptions.builder()
+                 .outputMode(AggregationOptions.OutputMode.CURSOR).allowDiskUse(true)
+                 .build();
+      	  mongoCursor = this.mongoCollection.aggregate(pipelines, options);
+      	  iter = new ResultSetIterator(mongoCursor).getIterator();
    	  }
         return iter;
     }
@@ -116,11 +128,11 @@ public class MongoDataSource extends DataSource<Iterator<Map<String, Object>>> {
         return getData(query);
     }
     private class ResultSetIterator {
-        DBCursor MongoCursor;
+        Cursor MongoCursor;
 
         Iterator<Map<String, Object>> rSetIterator;
 
-        public ResultSetIterator(DBCursor MongoCursor) {
+        public ResultSetIterator(Cursor MongoCursor) {
             this.MongoCursor = MongoCursor;
 
 
@@ -266,7 +278,7 @@ public class MongoDataSource extends DataSource<Iterator<Map<String, Object>>> {
        }
    }
     
-    private DBCursor getMongoCursor() {
+    private Cursor getMongoCursor() {
         return this.mongoCursor;
     }
 
